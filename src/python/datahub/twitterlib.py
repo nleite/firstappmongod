@@ -38,7 +38,7 @@ class Tweets(object):
     def timeline(self):
         response = self.clientapi.api.statuses.user_timeline.get()
         for tw in response.data:
-            yield tw
+            yield dict(tw)
 
     def user_tweets(self, limit=-1):
         if self.clientapi is None: 

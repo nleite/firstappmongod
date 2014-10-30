@@ -80,7 +80,8 @@ class Gmail(Account):
         self.tls = account_details['tls']
         self.RFC = "(RFC822)"
 
-        self.excluded_folders = account_details['excluded_folders']
+        self.excluded_folders = account_details.get('blacklist_folders', None)
+        self.wlist = account_details.get('whitelist_folders', None)
 
         self.server = None
 
@@ -88,16 +89,20 @@ class Gmail(Account):
         self.server = imaplib.IMAP4_SSL(self.imap)
         self.server.login(self.user, self.pwd)
 
+
     def load_email(self, folder, limit=1, criterion='ALL',):
 
         if self.server is None:
             self.connect()
         if folder is None:
             res, folders = self.server.list()
+            
             for element in folders:
                 f = element.split(' ')[-1].replace('"', '')
                 if f in self.excluded_folders:
-                    break
+                    continue
+                if self.wlist is not None and f not in self.wlist:
+                    continue    
                 for mail in self.load_email(f, limit):
                     yield mail
             return
@@ -108,7 +113,7 @@ class Gmail(Account):
             return
         res, data = self.server.search("UTF-8", 'ALL')
         ids = data[0].split()
-        for mid in ids[:limit]:
+        for mid in ids:
             res, data = self.server.fetch(mid, self.RFC)
 
             parsed = self.parse_document(email.message_from_string(data[0][1]))
