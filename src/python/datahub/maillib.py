@@ -17,13 +17,12 @@ class GmailParser(object):
         """
         if value is None:
             return ""
-        splited = re.split( "[<>]", value)
+        splited = re.split("[<>]", value)
         if len(splited) == 1:
             return {'raw':value, 'email': splited[0]}
         return {'raw':value, 'name': splited[0].strip(), 'email': splited[1]}
 
     def parse_payload(self, document):
-        
         if isinstance(document, list):
             l = []    
             for d in document:
@@ -34,7 +33,7 @@ class GmailParser(object):
                 return self.parse_payload(document.get_payload())
             else:
                 return self.parse_content_type(document)
-    
+
     def parse_content_type(self, data):
         ct = data.get_content_type()
         if ct == "text/html":
@@ -89,14 +88,25 @@ class Gmail(Account):
         self.server = imaplib.IMAP4_SSL(self.imap)
         self.server.login(self.user, self.pwd)
 
+    def get_folders(self):
+        """
+        Given an account we might want to list all existing folders.
+        Returns list of folders or empty in case of connection failure
+        """
+        res, folders = self.server.list()
+        if res == "NO":
+            return []
+
+        return folders
+
 
     def load_email(self, folder, limit=1, criterion='ALL',):
 
         if self.server is None:
             self.connect()
         if folder is None:
-            res, folders = self.server.list()
             
+            folders = self.get_folders()
             for element in folders:
                 f = element.split(' ')[-1].replace('"', '')
                 if f in self.excluded_folders:
