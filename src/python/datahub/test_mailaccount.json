@@ -1,0 +1,7 @@
+{
+    "name": "norberto@mongodb.com",
+    "credentials":{"user": "norberto@10gen.com", "password": "gzauaexxpurufliy"}, 
+    "imap": "imap.gmail.com", "tls": true,
+    "blacklist_folders": ["Noselect"],
+    "whitelist_folders": ["mongodb-user"]
+}
